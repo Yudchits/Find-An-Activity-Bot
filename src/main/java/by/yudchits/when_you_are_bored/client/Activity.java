@@ -17,7 +17,7 @@ public class Activity {
     @Value("${activity.url}")
     private String URL;
 
-    public String getActivity(){
+    public String getJSONActivity(){
         var request = new Request.Builder()
                 .url(URL)
                 .build();

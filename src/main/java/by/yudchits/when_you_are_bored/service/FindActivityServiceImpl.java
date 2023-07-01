@@ -1,6 +1,9 @@
 package by.yudchits.when_you_are_bored.service;
 
 import by.yudchits.when_you_are_bored.client.Activity;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +15,26 @@ public class FindActivityServiceImpl implements FindActivityService{
 
     @Override
     public String getActivity() {
-        return activity.getActivity();
+        String json = activity.getJSONActivity();
+
+        JSONParser parser = new JSONParser();
+
+        try {
+            JSONObject object = (JSONObject) parser.parse(json);
+
+            String activity =(String) object.get("activity");
+            String type =(String) object.get("type");
+            String link =(String) object.get("link");
+
+            String text = """
+                    activity : %s,
+                    type: %s,
+                    link: %s
+                    """;
+
+            return String.format(text, activity, type, link);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
