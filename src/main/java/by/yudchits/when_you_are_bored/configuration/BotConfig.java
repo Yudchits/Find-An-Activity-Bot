@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @Data
 public class BotConfig {
-    
+
     @Value("${bot.name}")
     private String botName;
 
