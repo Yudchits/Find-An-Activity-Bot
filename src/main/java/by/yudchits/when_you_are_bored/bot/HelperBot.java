@@ -13,6 +13,8 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
@@ -31,7 +33,7 @@ public class HelperBot extends TelegramLongPollingBot {
     private static final String HELP_TEXT = """
             You can use these commands:
                         
-            /get_activity - get a random activity
+            /activity - get a random activity
             /help = get list of the commands
             """;
 
@@ -39,7 +41,7 @@ public class HelperBot extends TelegramLongPollingBot {
         super(botToken);
 
         List<BotCommand> commands = new ArrayList<>();
-        commands.add(new BotCommand("/get_activity", "get an activity"));
+        commands.add(new BotCommand("/activity", "get an activity"));
         commands.add(new BotCommand("/help", "get list of commands"));
 
         try {
@@ -58,7 +60,7 @@ public class HelperBot extends TelegramLongPollingBot {
 
             switch (message) {
                 case "/start" -> startCommand(chatId, userName);
-                case "/get_activity" -> getActivityCommands(chatId);
+                case "/activity" -> getActivityCommands(chatId);
                 case "/help" -> sendMessage(chatId, HELP_TEXT);
                 default -> sendMessage(chatId, "This command is not supported!");
             }
@@ -86,6 +88,7 @@ public class HelperBot extends TelegramLongPollingBot {
 
     private void sendMessage(long chatId, String text) {
         SendMessage message = new SendMessage(String.valueOf(chatId), text);
+        message.setReplyMarkup(getKeyboardMarkUp());
 
         try {
             execute(message);
@@ -94,6 +97,25 @@ public class HelperBot extends TelegramLongPollingBot {
         }
     }
 
+    private ReplyKeyboardMarkup getKeyboardMarkUp(){
+        ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
+        keyboard.setResizeKeyboard(true);
+
+        List<KeyboardRow> rows = new ArrayList<>();
+
+        KeyboardRow row = new KeyboardRow();
+        row.add("/activity");
+
+        rows.add(row);
+
+        row = new KeyboardRow();
+        row.add("/activity_by_type");
+        rows.add(row);
+
+        keyboard.setKeyboard(rows);
+
+        return keyboard;
+    }
 
     @Override
     public String getBotUsername() {
