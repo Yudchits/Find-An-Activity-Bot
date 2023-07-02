@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
@@ -71,7 +72,29 @@ public class HelperBot extends TelegramLongPollingBot {
                 default -> sendMessage(chatId, "This command is not supported!");
             }
         } else if (update.hasCallbackQuery()) {
-            
+            String data = update.getCallbackQuery().getData();
+            long messageId = update.getCallbackQuery().getMessage().getMessageId();
+            long chatId = update.getCallbackQuery().getMessage().getChatId();
+            String text = "";
+
+            int index = 0;
+            for (String idOfType : idOfTypes) {
+                if(idOfType.equals(data)){
+                    text = findActivityService.getActivityByType(types[index]);
+                }
+                index++;
+            }
+
+            EditMessageText editedMessage = new EditMessageText();
+            editedMessage.setMessageId((int) messageId);
+            editedMessage.setChatId(chatId);
+            editedMessage.setText(text);
+
+            try {
+                execute(editedMessage);
+            } catch (TelegramApiException e) {
+                log.error("Occurred error: " + e.getMessage());
+            }
         }
     }
 
