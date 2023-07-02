@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-public class FindActivityServiceImpl implements FindActivityService{
+public class FindActivityServiceImpl implements FindActivityService {
 
     @Autowired
     private Activity activity;
@@ -31,23 +31,27 @@ public class FindActivityServiceImpl implements FindActivityService{
         return parseJSON(json);
     }
 
-    private String parseJSON(String json){
+    private String parseJSON(String json) {
         JSONParser parser = new JSONParser();
 
         try {
             JSONObject object = (JSONObject) parser.parse(json);
 
-            String activity =(String) object.get("activity");
-            String type =(String) object.get("type");
-            String link =(String) object.get("link");
+            String activity = (String) object.get("activity");
+            String type = (String) object.get("type");
+            Long participants = (Long) object.get("participants");
+            String link = (String) object.get("link");
+            String key = (String) object.get("key");
 
             String text = """
-                    activity : %s,
-                    type: %s,
+                    activity : %s
+                    type: %s
+                    participants: %d
                     link: %s
+                    key: %s
                     """;
 
-            return String.format(text, activity, type, link);
+            return String.format(text, activity, type, participants, link, key);
         } catch (ParseException e) {
             log.error("Occurred error: " + e.getMessage());
         }
