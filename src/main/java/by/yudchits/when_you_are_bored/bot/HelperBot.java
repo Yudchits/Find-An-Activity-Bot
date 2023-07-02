@@ -13,7 +13,9 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -36,6 +38,9 @@ public class HelperBot extends TelegramLongPollingBot {
             /activity - get a random activity
             /help = get list of the commands
             """;
+
+    private static final String[] types = {"education", "recreational", "social", "diy", "charity", "cooking", "relaxation", "music", "busywork"};
+    private static final String[] idOfTypes = {"EDUCATION_BUTTON", "RECREATIONAL_BUTTON", "SOCIAL_BUTTON", "DIY_BUTTON", "CHARITY_BUTTON", "COOKING_BUTTON", "RELAXATION_BUTTON", "MUSIC_BUTTON", "BUSYWORK_BUTTON"};
 
     public HelperBot(@Value("${bot.token}") String botToken) {
         super(botToken);
@@ -61,9 +66,12 @@ public class HelperBot extends TelegramLongPollingBot {
             switch (message) {
                 case "/start" -> startCommand(chatId, userName);
                 case "/activity" -> getActivityCommands(chatId);
+                case "/activity_by_type" -> getActivityByTypeCommand(chatId);
                 case "/help" -> sendMessage(chatId, HELP_TEXT);
                 default -> sendMessage(chatId, "This command is not supported!");
             }
+        } else if (update.hasCallbackQuery()) {
+            
         }
     }
 
@@ -86,9 +94,11 @@ public class HelperBot extends TelegramLongPollingBot {
         sendMessage(chatId, activity);
     }
 
-    private void sendMessage(long chatId, String text) {
-        SendMessage message = new SendMessage(String.valueOf(chatId), text);
-        message.setReplyMarkup(getKeyboardMarkUp());
+    private void getActivityByTypeCommand(long chatId) {
+        SendMessage message = new SendMessage();
+        message.setChatId(String.valueOf(chatId));
+        message.setText("Choose a type of activity:");
+        message.setReplyMarkup(getInlineKeyboard());
 
         try {
             execute(message);
@@ -97,7 +107,18 @@ public class HelperBot extends TelegramLongPollingBot {
         }
     }
 
-    private ReplyKeyboardMarkup getKeyboardMarkUp(){
+    private void sendMessage(long chatId, String text) {
+        SendMessage message = new SendMessage(String.valueOf(chatId), text);
+        message.setReplyMarkup(getReplyKeyboard());
+
+        try {
+            execute(message);
+        } catch (TelegramApiException e) {
+            log.error("Occurred error: " + e.getMessage());
+        }
+    }
+
+    private ReplyKeyboardMarkup getReplyKeyboard(){
         ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
         keyboard.setResizeKeyboard(true);
 
@@ -111,6 +132,36 @@ public class HelperBot extends TelegramLongPollingBot {
         row = new KeyboardRow();
         row.add("/activity_by_type");
         rows.add(row);
+
+        keyboard.setKeyboard(rows);
+
+        return keyboard;
+    }
+
+    private InlineKeyboardMarkup getInlineKeyboard() {
+        InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
+
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        List<InlineKeyboardButton> row = new ArrayList<>();
+
+        int counter = 0;
+        for (int i = 0; i < types.length; i++) {
+            if(counter == 3){
+                rows.add(row);
+                row = new ArrayList<>();
+                counter = 0;
+            }
+
+            var button = new InlineKeyboardButton();
+            button.setText(types[i]);
+            button.setCallbackData(idOfTypes[i]);
+
+            row.add(button);
+            counter++;
+        }
+        if(counter > 0)
+            rows.add(row);
 
         keyboard.setKeyboard(rows);
 

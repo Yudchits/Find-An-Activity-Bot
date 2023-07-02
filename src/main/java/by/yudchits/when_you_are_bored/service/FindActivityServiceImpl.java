@@ -15,10 +15,23 @@ public class FindActivityServiceImpl implements FindActivityService{
     @Autowired
     private Activity activity;
 
+    private String url = "http://www.boredapi.com/api/activity";
+
     @Override
     public String getActivity() {
-        String json = activity.getJSONActivity();
+        String json = activity.getJSONActivity(url);
 
+        return parseJSON(json);
+    }
+
+    @Override
+    public String getActivityByType(String type) {
+        String json = activity.getJSONActivity(url + "?type=" + type);
+
+        return parseJSON(json);
+    }
+
+    private String parseJSON(String json){
         JSONParser parser = new JSONParser();
 
         try {

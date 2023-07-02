@@ -16,12 +16,9 @@ public class Activity {
     @Autowired
     private OkHttpClient client;
 
-    @Value("${activity.url}")
-    private String URL;
-
-    public String getJSONActivity() {
+    public String getJSONActivity(String url) {
         var request = new Request.Builder()
-                .url(URL)
+                .url(url)
                 .build();
 
         try (var respond = client.newCall(request).execute()) {
