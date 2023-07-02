@@ -3,6 +3,7 @@ package by.yudchits.when_you_are_bored.bot;
 import by.yudchits.when_you_are_bored.configuration.BotConfig;
 import by.yudchits.when_you_are_bored.service.FindActivityService;
 import com.vdurmont.emoji.EmojiParser;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@Slf4j
 public class HelperBot extends TelegramLongPollingBot {
 
     @Autowired
@@ -28,12 +30,12 @@ public class HelperBot extends TelegramLongPollingBot {
 
     private static final String HELP_TEXT = """
             You can use these commands:
-            
+                        
             /get_activity - get a random activity
             /help = get list of the commands
             """;
 
-    public HelperBot(@Value("${bot.token}") String botToken){
+    public HelperBot(@Value("${bot.token}") String botToken) {
         super(botToken);
 
         List<BotCommand> commands = new ArrayList<>();
@@ -43,18 +45,18 @@ public class HelperBot extends TelegramLongPollingBot {
         try {
             execute(new SetMyCommands(commands, new BotCommandScopeDefault(), null));
         } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
+            log.error("Menu error: " + e.getMessage());
         }
     }
 
     @Override
     public void onUpdateReceived(Update update) {
-        if(update.hasMessage() && update.getMessage().hasText()){
+        if (update.hasMessage() && update.getMessage().hasText()) {
             long chatId = update.getMessage().getChatId();
             String userName = update.getMessage().getChat().getUserName();
             String message = update.getMessage().getText();
 
-            switch (message){
+            switch (message) {
                 case "/start" -> startCommand(chatId, userName);
                 case "/get_activity" -> getActivityCommands(chatId);
                 case "/help" -> sendMessage(chatId, HELP_TEXT);
@@ -66,27 +68,29 @@ public class HelperBot extends TelegramLongPollingBot {
     private void startCommand(long chatId, String userName) {
         String text = EmojiParser.parseToUnicode("""
                 Welcome, %s!:fire:
-                
+                                
                 We can help you to find a thing that you can do when you're bored
                 """);
 
         String formattedText = String.format(text, userName);
 
         sendMessage(chatId, formattedText);
+        log.info("The beginning of using of the bot by " + userName);
     }
 
-    private void getActivityCommands(long chatId){
+    private void getActivityCommands(long chatId) {
         String activity = findActivityService.getActivity();
 
         sendMessage(chatId, activity);
     }
 
-    private void sendMessage(long chatId, String formattedText) {
-        SendMessage message = new SendMessage(String.valueOf(chatId), formattedText);
+    private void sendMessage(long chatId, String text) {
+        SendMessage message = new SendMessage(String.valueOf(chatId), text);
 
         try {
             execute(message);
         } catch (TelegramApiException e) {
+            log.error("Occurred error: " + e.getMessage());
         }
     }
 

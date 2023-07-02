@@ -1,6 +1,7 @@
 package by.yudchits.when_you_are_bored.service;
 
 import by.yudchits.when_you_are_bored.client.Activity;
+import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class FindActivityServiceImpl implements FindActivityService{
 
     @Autowired
@@ -34,7 +36,9 @@ public class FindActivityServiceImpl implements FindActivityService{
 
             return String.format(text, activity, type, link);
         } catch (ParseException e) {
-            throw new RuntimeException(e);
+            log.error("Occurred error: " + e.getMessage());
         }
+
+        return null;
     }
 }
